@@ -6,9 +6,31 @@ import java.util.ArrayList;
 public class Category {
   private int id;
   private String name;
+  private boolean is_completed;
+
 
   public Category(String name) {
     this.name = name;
+  }
+
+  public boolean getIsCompleted(){
+    return is_completed;
+  }
+
+  public void complete(){
+
+    if ( this.getIsCompleted() ){
+      this.is_completed = false;
+    } else {
+      this.is_completed = true;
+    }
+    try(Connection con = DB.sql2o.open()) {
+      String sql = "UPDATE categories SET is_completed = :is_completed WHERE id = :id";
+      con.createQuery(sql)
+        .addParameter("is_completed", this.getIsCompleted())
+        .addParameter("id", this.id)
+        .executeUpdate();
+    }
   }
 
   public String getName() {
@@ -39,9 +61,10 @@ public class Category {
 
   public void save() {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "INSERT INTO Categories(name) VALUES (:name)";
+      String sql = "INSERT INTO Categories(name, is_completed) VALUES (:name, :is_completed)";
       this.id = (int) con.createQuery(sql, true)
         .addParameter("name", this.name)
+        .addParameter("is_completed", this.getIsCompleted())
         .executeUpdate()
         .getKey();
     }

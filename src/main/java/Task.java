@@ -5,6 +5,8 @@ import java.util.ArrayList;
 public class Task {
   private int id;
   private String description;
+  private boolean is_completed;
+
 
   public Task(String description) {
     this.description = description;
@@ -16,6 +18,26 @@ public class Task {
 
   public int getId() {
     return id;
+  }
+
+  public boolean getIsCompleted(){
+    return is_completed;
+  }
+
+  public void complete(){
+    if (this.getIsCompleted() ){
+      this.is_completed = false;
+    } else {
+      this.is_completed = true ;
+    }
+
+    try(Connection con = DB.sql2o.open()) {
+      String sql = "UPDATE tasks SET is_completed = :is_completed WHERE id = :id";
+      con.createQuery(sql)
+        .addParameter("is_completed", this.is_completed)
+        .addParameter("id", this.id)
+        .executeUpdate();
+    }
   }
 
   public static List<Task> all() {
@@ -38,9 +60,10 @@ public class Task {
 
   public void save() {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "INSERT INTO tasks(description) VALUES (:description)";
+      String sql = "INSERT INTO tasks(description, is_completed) VALUES (:description, :is_completed)";
       this.id = (int) con.createQuery(sql, true)
         .addParameter("description", this.description)
+        .addParameter("is_completed", this.is_completed)
         .executeUpdate()
         .getKey();
     }
