@@ -88,4 +88,18 @@ public class Category {
       return tasks;
     }
   }
+
+  public void delete() {
+    try(Connection con = DB.sql2o.open()) {
+      String deleteQuery = "DELETE FROM categories WHERE id = :id;";
+        con.createQuery(deleteQuery)
+          .addParameter("id", this.getId())
+          .executeUpdate();
+
+      String joinDeleteQuery = "DELETE FROM categories_tasks WHERE category_id = :categoryId";
+        con.createQuery(joinDeleteQuery)
+          .addParameter("categoryId", this.getId())
+          .executeUpdate();
+    }
+  }
 }
